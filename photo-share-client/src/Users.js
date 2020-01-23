@@ -18,9 +18,11 @@ const UserList = ({ count, users, refetchUsers }) =>
     <p>{count} Users</p>
     <button onClick={() => refetchUsers()}>Refetch Users</button>
     <Mutation mutation={ADD_FAKE_USERS_MUTATION}
-      variables={{ count: 1}} >
+      variables={{ count: 1 }}
+      update={updateUserCache}>
       {addFakeUsers => 
-        <button onClick={addFakeUsers}>Add Fake Users</button>}
+        <button onClick={addFakeUsers}>Add Fake Users</button>
+      }
     </Mutation>
     <ul>
       {users.map(user =>
@@ -36,6 +38,16 @@ const UserListItem = ({ name, avatar }) =>
           <img src={avatar} width={48} height={48} alt="" />
           {name}
         </li>
+
+const updateUserCache = (cache, { data:{ addFakeUsers }}) => {
+  let data = cache.readQuery({ query: ROOT_QUERY });
+  data.totalUsers += addFakeUsers.length;
+  data.allUsers = [
+    ...data.allUsers,
+    ...addFakeUsers
+  ];
+  cache.writeQuery({ query: ROOT_QUERY, data });
+}
 
 const ADD_FAKE_USERS_MUTATION = gql`
   mutation addFakeUsers($count:Int!) {
